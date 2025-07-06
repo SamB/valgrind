@@ -74,7 +74,9 @@ endif
 endif
 # On Android we must ask for non-executable stack, not sure why.
 if VGCONF_PLATVARIANT_IS_ANDROID
+if HAVE_STATIC_LIBC
 valgrind_CFLAGS += -static
+endif
 valgrind_LDFLAGS   += -Wl,-z,noexecstack
 endif
 if VGCONF_OS_IS_SOLARIS
@@ -108,7 +110,9 @@ vgdb_CFLAGS    = $(AM_CFLAGS_PRI) $(LTO_CFLAGS) -fhosted
 vgdb_CCASFLAGS = $(AM_CCASFLAGS_PRI)
 vgdb_LDFLAGS   = $(AM_CFLAGS_PRI) @LIB_UBSAN@
 if VGCONF_PLATVARIANT_IS_ANDROID
+if HAVE_STATIC_LIBC
 vgdb_CFLAGS    += -static
+endif
 endif
 if VGCONF_OS_IS_SOLARIS
 vgdb_LDADD     = -lsocket

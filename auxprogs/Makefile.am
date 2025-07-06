@@ -37,7 +37,9 @@ valgrind_listener_CFLAGS    = $(AM_CFLAGS_PRI) -fhosted
 valgrind_listener_CCASFLAGS = $(AM_CCASFLAGS_PRI)
 valgrind_listener_LDFLAGS   = $(AM_CFLAGS_PRI)
 if VGCONF_PLATVARIANT_IS_ANDROID
+if HAVE_STATIC_LIBC
 valgrind_listener_CFLAGS    += -static
+endif
 endif
 # If there is no secondary platform, and the platforms include x86-darwin,
 # then the primary platform must be x86-darwin.  Hence:
@@ -56,7 +58,9 @@ valgrind_di_server_CFLAGS    = $(AM_CFLAGS_PRI) -fhosted
 valgrind_di_server_CCASFLAGS = $(AM_CCASFLAGS_PRI)
 valgrind_di_server_LDFLAGS   = $(AM_CFLAGS_PRI)
 if VGCONF_PLATVARIANT_IS_ANDROID
+if HAVE_STATIC_LIBC
 valgrind_di_server_CFLAGS    += -static
+endif
 endif
 # If there is no secondary platform, and the platforms include x86-darwin,
 # then the primary platform must be x86-darwin.  Hence:
