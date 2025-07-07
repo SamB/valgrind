@@ -36,6 +36,27 @@
 /*====================================================================*/
 
 #if defined(VGP_arm64_linux)
+#if defined(VGPV_arm64_linux_android)
+// (Note: recent NDK versions use LLVM's compiler-rt builtins instead of
+// libgcc.)
+//
+// This gets pretty fiddly due to the initial Android 8.0 kernel on Galaxy
+// S9/S9+ giving results for ARMv8.2 even though the processor has a mix of
+// ARMv8.0 and ARMv8.2 cores.
+//
+// Rather than trying to stub __system_property_get (which is the Bionic libc
+// equivalent of the "getprop" command, and apparently can be used to detect the
+// cpu model on the buggy Galaxy firmwares) and __stack_chk_fail (which seems to
+// be there due to -fstack-protector), just disable LSE here for now.
+//
+// We could consider adding our own reimplementation of init_have_lse_atomics
+// when __ANDROID_MIN_SDK_VERSION__ > 26 (26 is the api level for O, which is
+// the code letter for Android 8.0) that just uses __getauxval(), though nothing
+// would stop it running on an older device since we don't use libc in this
+// binary anyway...
+_Bool __aarch64_have_lse_atomics = 0;
+#endif
+
 struct auxv
 {
    Word a_type;
