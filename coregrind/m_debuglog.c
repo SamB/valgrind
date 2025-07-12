@@ -291,7 +291,7 @@ static UInt local_sys_write_stderr ( const HChar* buf, Int n )
       "str  x0, [%0]\n\t"
       :
       : "r" (block)
-      : "x0","x1","x2","x7"
+      : "x0","x1","x2","x8","cc","memory"
    );
    if (block[0] < 0)
       block[0] = -1;
