@@ -7274,6 +7274,39 @@ Bool dis_ARM64_load_store(/*MB_OUT*/DisResult* dres, UInt insn,
       return True;
    }
 
+   /* ---------------- ARMv8.2-LRCPC: Load-AcquirePC ---------------- */
+   /* 31 29     23 22 21 20     15   11 9 4
+      sz 111000 1  0  1  11111  1100 00 n t LDAPR<sz> <Rt>, [<Xn|SP>]
+   */
+   if (INSN(29,24) == BITS6(1,1,1,0,0,0)
+       && INSN(21,21) == 1
+       && (INSN(15,12) == BITS4(1,1,0,0))
+       && INSN(23,22) == BITS2(1,0) // A=1, R=0
+       && INSN(11,10) == BITS2(0,0)) {
+      UInt szBlg2 = INSN(31,30);
+      UInt nn  = INSN(9,5);
+      UInt tt  = INSN(4,0);
+
+      // Code copied from LDA{R,RH,RB} above
+      vassert(szBlg2 < 4);
+      UInt   szB = 1 << szBlg2; /* 1, 2, 4 or 8 */
+      IRType ty  = integerIRTypeOfSize(szB);
+      const HChar* suffix[4] = { "rb", "rh", "r", "r" };
+
+      IRTemp ea = newTemp(Ity_I64);
+      assign(ea, getIReg64orSP(nn));
+      gen_SIGBUS_if_not_XX_aligned(ea, szB);
+
+      IRTemp res = newTemp(ty);
+      assign(res, loadLE(ty, mkexpr(ea)));
+      putIReg64orZR(tt, widenUto64(ty, mkexpr(res)));
+      stmt(IRStmt_MBE(Imbe_Fence));
+      DIP("ldap%s %s, [%s]\n", suffix[szBlg2],
+          nameIRegOrZR(szB == 8, tt), nameIReg64orSP(nn));
+
+      return True;
+   }
+
    /* ------------------ ARMv8.1-LSE: Compare-and-Swap ------------------ */
    /* 31 29      22 21 20 15 14    9 4
       sz 0010001 A  1  s  R  11111 n t CAS{,A}{,L}<sz> <Rs>, <Rt>, [<Xn|SP>]
